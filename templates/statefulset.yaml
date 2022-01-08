@@ -21,7 +21,7 @@ spec:
         command:
         - "bash"
         - "-c"
-        - "test -f /data/index.sqlite3 || apt-get update && apt-get -y install expect && chown archivebox:archivebox /data && su archivebox /createsuperuser.sh && echo 'success!'"
+        - "if [ ! -f /data/index.sqlite3 ]; then apt-get update && apt-get -y install expect && chown archivebox:archivebox /data && su archivebox /createsuperuser.sh && echo 'success!' && exit 0; fi; echo '/data/index.sqlite3 already exists, skipping setup'"
         volumeMounts:
         - name: archivebox-data
           mountPath: /data
