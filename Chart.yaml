@@ -1,0 +1,8 @@
+apiVersion: v1
+appVersion: "sha-efebd8e"
+description: Simple Archivebox helm chart for RPI
+maintainers:
+  - email: matt@mattscodecave.com
+    name: Matt
+name: archivebox-pi-helm
+version: 1

@@ -1,0 +1,13 @@
+---
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: archivebox-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: {{ .Values.storage.request }}
+  storageClassName: local-storage

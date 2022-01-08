@@ -1,0 +1,61 @@
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: archivebox
+spec:
+  selector:
+    matchLabels:
+        app: archivebox
+  serviceName: archivebox
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: archivebox
+    spec:
+      terminationGracePeriodSeconds: 10
+      initContainers:
+      - name: archivebox-init
+        image: {{ .Values.image }}
+        command:
+        - "bash"
+        - "-c"
+        - "test -f /data/index.sqlite3 || apt-get update && apt-get -y install expect && chown archivebox:archivebox /data && su archivebox /createsuperuser.sh && echo 'success!'"
+        volumeMounts:
+        - name: archivebox-data
+          mountPath: /data
+        - name: archivebox-init
+          mountPath: /createsuperuser.sh
+          subPath: createsuperuser.sh
+      containers:
+      - name: archivebox
+        image: {{ .Values.image }}
+        command:
+        - su
+        args:
+        - "archivebox"
+        - "-c"
+        - "archivebox server 0.0.0.0:{{ .Values.archivebox.port }}"
+        env:
+        - name: ALLOWED_HOSTS
+          value: "*"
+        - name: MEDIA_MAX_SIZE
+          value: {{ .Values.archivebox.media_max_size }}
+        ports:
+        - containerPort: {{ .Values.archivebox.port }}
+          protocol: TCP
+          name: ingress
+        volumeMounts:
+        - name: archivebox-data
+          mountPath: /data
+        - name: archivebox-init
+          mountPath: /createsuperuser.sh
+          subPath: createsuperuser.sh
+      volumes:
+        - name: archivebox-data
+          persistentVolumeClaim:
+            claimName: archivebox-pvc
+        - name: archivebox-init
+          configMap:
+            name: archivebox-init-cm

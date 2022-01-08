@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: archivebox-init-cm
+data:
+  createsuperuser.sh: |-
+    set -e
+    archivebox init
+    /usr/bin/expect<<EOF
+    set timeout -1
+    spawn sh -c "cd /data && archivebox manage createsuperuser --username {{ .Values.username }} --email {{ .Values.email }}"
+    match_max 100000
+    expect "*?assword: "
+    send -- "{{ .Values.password }}\r"
+    expect "*?assword (again): "
+    send -- "{{ .Values.password }}\r"
+    expect {
+      "*Bypass password*" { send -- "y\r"; exp_continue }
+      eof { exit }
+    }
+    EOF
+    archivebox init --setup
